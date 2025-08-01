@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="./StudentDashBoard.css">
+</head>
+<body>
+    <div class="container my-5">
+    <div class="card shadow">
+        <div class="card-header text-white text-center fs-4" style="background-color: #7e3ff2;">
+            Student Details
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-3 fw-bold">Roll Number:</div>
+                <div class="col-md-5" id="rollno"></div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-3 fw-bold">Name:</div>
+                <div class="col-md-5" id="name"></div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-3 fw-bold">Age:</div>
+                <div class="col-md-5" id="age"></div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-3 fw-bold">Gender:</div>
+                <div class="col-md-5" id="gender"></div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-3 fw-bold">Email:</div>
+                <div class="col-md-5" id="email"></div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-3 fw-bold">Phone:</div>
+                <div class="col-md-5" id="phone"></div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-3 fw-bold">Course:</div>
+                <div class="col-md-5" id="course"></div>
+            </div>
+
+            <div>
+                <button onclick="logOut()" class="btn bg-primary btn-md text-white">Log Out</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = async function () {
+        const rollno = localStorage.getItem("rollno");
+
+        if (!rollno) {
+        alert("No student logged in.");
+        window.location.href = "/Pages/StudentPortal/StudentForm.html";
+        return;
+        }
+
+        try {
+        const response = await fetch(`http://localhost:8080/student/${rollno}`);
+        if (!response.ok) throw new Error("Student not found");
+
+        const student = await response.json();
+        
+
+        document.getElementById("rollno").textContent = student.rollno;
+        document.getElementById("name").textContent = student.name;
+        document.getElementById("age").textContent = student.age;
+        document.getElementById("gender").textContent = student.gender;
+        document.getElementById("email").textContent = student.email;
+        document.getElementById("phone").textContent = student.phoneNumber;
+        document.getElementById("course").textContent = student.course;
+        } catch (err) {
+        alert("⚠️ Failed to load student details: " + err.message);
+        }
+    };
+
+    function logOut(){
+        window.location.href="/index.html"
+    }
+</script>
+
+</body>
+</html>

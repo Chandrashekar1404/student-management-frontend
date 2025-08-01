@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="./AdminDashBoard.css">
+</head>
+<body>
+    <div class="main-div">
+        <div class="main-container">
+    <div class="login-container">
+    <div class="login-box">
+        <div class="avatar d-flex justify-content-center align-items-center">👤<h3>Enter Students Details</h3></div>
+        
+        <form onsubmit="addStudentDetails(event)">
+            <!-- <label for="rollNumber">Roll Number</label>
+            <input type="text" id="rollNumber" placeholder="Roll Number" required /> -->
+
+            <label for="name">Name</label>
+            <input type="text" id="name" placeholder="Name" required />
+
+            <label for="age">Age</label>
+            <input type="number" id="age" placeholder="Age" required />
+
+            <label for="gender">Gender</label>
+            <input type="text" id="gender" placeholder="Gender" required />
+
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Email" required />
+
+            <label for="phoneNumber">Phone Number</label>
+            <input type="tel" id="phoneNumber" placeholder="Phone Number" required />
+
+            <label for="course">Course</label>
+            <input type="text" id="course" placeholder="Enter Course" required />
+
+            <button type="submit" class="login-btn">Submit</button>
+            </form>
+    </div>
+    <div onclick="adminLogOut()" class="logout-btn-div"><button class="btn btn-sm btn-primary">Log Out</button></div>
+</div>
+</div><br>
+        
+    </div>
+
+    
+        <div class="table-container">
+                <table class="table table-hover" id="studentTable">
+                    <thead>
+                        <tr>
+                        <th>Roll No</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Course</th>
+                        <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody"></tbody>
+                </table>
+            </div>
+
+    <script>
+        window.onload = loadStudents;
+
+        async function addStudentDetails(event) {
+        event.preventDefault();
+
+    const name = document.getElementById("name").value;
+    const age = document.getElementById("age").value;
+    const gender = document.getElementById("gender").value;
+    const email = document.getElementById("email").value;
+    const phoneNumber = document.getElementById("phoneNumber").value;
+    const course = document.getElementById("course").value;
+
+    let url = "http://localhost:8080/student/add";
+    let method = "POST";
+
+    // 👇 This is what distinguishes update vs. add
+    const student = { name, age, gender, email, phoneNumber, course };
+
+    if (currentEditRollno) {
+        student.rollno = currentEditRollno;  // Include roll number for update
+        url = `http://localhost:8080/student/update/${currentEditRollno}`;
+        method = "PUT";
+    }
+
+    const response = await fetch(url, {
+        method,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(student)   
+    });
+
+    const result = await response.text();
+
+    if (response.ok) {
+        alert("✅ Student Added Successfully");
+        document.querySelector("form").reset();
+        document.querySelector("button.login-btn").textContent = "Submit";
+        currentEditRollno = null;
+        loadStudents(); // reloads updated table
+    } else {
+        alert("❌ " + result);
+    }
+}
+
+
+        async function loadStudents() {
+        const response = await fetch("http://localhost:8080/student/all");
+        const students = await response.json();
+
+        const tableBody = document.getElementById("studentTableBody");
+        tableBody.innerHTML = "";
+
+        students.forEach(student => {
+            const row = `
+                <tr id="row-${student.rollno}">
+                    <td>${student.rollno}</td>
+                    <td>${student.name}</td>
+                    <td>${student.age}</td>
+                    <td>${student.gender}</td>
+                    <td>${student.email}</td>
+                    <td>${student.phoneNumber}</td>
+                    <td>${student.course}</td>
+                    <td>
+                        <button onclick="editStudent(${student.rollno})" class="btn btn-sm btn-primary">Update</button>
+                        <button onclick="deleteStudent(${student.rollno})" class="btn btn-sm btn-danger">Delete</button>
+                    </td>
+                </tr>
+                `;
+
+            tableBody.innerHTML += row;
+        });
+    }
+
+window.onload = loadStudents;
+
+        async function deleteStudent(rollno){
+            const confirmStudent=confirm(`Are you sure you want to delete the student ${rollno}?`);
+            if(!confirmStudent)return;
+
+            const response= await fetch(`http://localhost:8080/student/delete/${rollno}`,{
+                method:"DELETE"
+            });
+
+        const result=await response.text();
+
+        if(response.ok){
+            alert("✅ " + result);
+            loadStudents(); 
+        }else{
+            alert("❌ " + result);
+        }
+
+        }
+        
+        let currentEditRollno = null; // global
+
+function editStudent(rollno) {
+
+    // console.log("editing student:",rollno);
+
+    const row = document.querySelector(`#row-${rollno}`);
+    const cells = row.querySelectorAll("td");
+
+    document.getElementById("name").value = cells[1].innerText;
+    document.getElementById("age").value = cells[2].innerText;
+    document.getElementById("gender").value = cells[3].innerText;
+    document.getElementById("email").value = cells[4].innerText;
+    document.getElementById("phoneNumber").value = cells[5].innerText;
+    document.getElementById("course").value = cells[6].innerText;
+
+    currentEditRollno = rollno; // store the current roll number for update
+
+    document.querySelector("button.login-btn").textContent = "Update Student";
+}
+
+    function adminLogOut(){
+        window.location.href="/index.html";
+    }
+
+    </script>
+</body>
+</html>
